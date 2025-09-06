@@ -1,21 +1,17 @@
 import pandas as pd
 from strategies.sma_strategy import SMA_Bot
 
-# -----------------------------
 # Define SMA ranges
-# -----------------------------
 short_windows = [5, 10, 20]
 long_windows = [20, 50, 100]
 
-# -----------------------------
-# Backtest Loop
-# -----------------------------
+# Store all results
 results = []
 
 for short_w in short_windows:
     for long_w in long_windows:
         if short_w >= long_w:
-            continue
+            continue  # skip invalid pairs
         
         bot = SMA_Bot("/Users/vikasjha/Desktop/algo_bot/data/historical_data.csv", short_window=short_w, long_window=long_w)
         bot.generate_signals()
@@ -31,30 +27,19 @@ for short_w in short_windows:
             "Max Drawdown (%)": perf.get("max_drawdown", 0)
         })
 
-# Save backtest results
+# Convert results to DataFrame
 df_results = pd.DataFrame(results)
+
+# Save to CSV
 df_results.to_csv("logs/backtest_results.csv", index=False)
 
-# -----------------------------
-# Pick Best SMA
-# -----------------------------
+# Print top 5 by Sharpe
+print(df_results.sort_values(by="Sharpe Ratio", ascending=False).head())
+# Sort results by Sharpe ratio descending
 best_sma = df_results.sort_values(by="Sharpe Ratio", ascending=False).iloc[0]
-short_window = int(best_sma['short_window'])
-long_window = int(best_sma['long_window'])
 
 print("\nBest SMA Parameters based on Sharpe Ratio:")
-print(f"Short Window: {short_window}")
-print(f"Long Window: {long_window}")
+print(f"Short Window: {best_sma['short_window']}")
+print(f"Long Window: {best_sma['long_window']}")
 print(f"Sharpe Ratio: {best_sma['Sharpe Ratio']}")
 print(f"Total Return (%): {best_sma['Total Return (%)']}")
-
-# -----------------------------
-# Run Bot on Full Data with Best SMA
-# -----------------------------
-bot = SMA_Bot("/Users/vikasjha/Desktop/algo_bot/data/historical_data.csv", short_window=short_window, long_window=long_window)
-bot.generate_signals()
-bot.run_trades()
-perf = bot.performance()
-
-print("\nPerformance on full data with best SMA:")
-print(perf)
