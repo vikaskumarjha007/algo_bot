@@ -1,0 +1,11 @@
+# Ignore logs and output files
+logs/
+plots/
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore system files (Mac)
+.DS_Store
